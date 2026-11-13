@@ -204,14 +204,11 @@
 
   /* ---------- projects ---------- */
   function renderProjects() {
-    $('#projectList').innerHTML = PROJECTS.map((p) => {
-      const after = `--wall:${colourById(p.wall).hex};--accent:${colourById(p.accent).hex};--trim:#f7f3ec;--sheen:.06`;
-      const before = '--wall:#b9b3a8;--accent:#aaa49a;--trim:#c9c4ba;--sheen:0';
-      return `
+    $('#projectList').innerHTML = PROJECTS.map((p) => `
       <article class="project reveal">
         <div class="ba" style="--pos:50%">
-          <div class="ba-layer" style="${after}">${roomSVG(p.scene, p.title + ' after painting')}</div>
-          <div class="ba-layer ba-before" style="${before}">${roomSVG(p.scene, p.title + ' before painting')}</div>
+          <div class="ba-layer"><img src="${esc(p.img)}" alt="${esc(p.title)} after painting" loading="lazy"></div>
+          <div class="ba-layer ba-before"><img src="${esc(p.before)}" alt="${esc(p.title)} before painting" loading="lazy"></div>
           <span class="ba-tag ba-tag-l">Before</span><span class="ba-tag ba-tag-r">After</span>
           <span class="ba-handle" aria-hidden="true"></span>
           <input type="range" min="0" max="100" value="50" aria-label="Compare before and after for ${esc(p.title)}">
@@ -221,8 +218,7 @@
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.note)}</p>
         </div>
-      </article>`;
-    }).join('');
+      </article>`).join('');
     $('#projectList').addEventListener('input', (e) => {
       if (e.target.type === 'range') e.target.closest('.ba').style.setProperty('--pos', e.target.value + '%');
     });
@@ -308,7 +304,7 @@
     $('#cart').setAttribute('aria-hidden', 'true');
     $('#checkoutBody').innerHTML = checkoutFormHTML;
     $('#checkoutSummary').textContent =
-      `${state.cart.reduce((s, i) => s + i.qty, 0)} item(s) · ${naira(cartTotal())}. No card payment is taken online — we confirm your order by phone.`;
+      `${state.cart.reduce((s, i) => s + i.qty, 0)} item(s) · ${naira(cartTotal())}. Pay online by card or bank transfer, or pay on delivery — we confirm every order by phone.`;
     $('#checkout').hidden = false;
     $('#checkoutForm input').focus();
   };
@@ -326,29 +322,79 @@
     return true;
   }
 
-  $('#checkout').addEventListener('submit', (e) => {
+  function showOrderDone(order, note) {
+    $('#checkoutBody').innerHTML = `
+      <h3>Thank you, ${esc(order.customer.name.split(' ')[0])}.</h3>
+      <p>Your order <b>${order.id}</b> for <b>${naira(order.total)}</b> has been received (${esc(order.payment)}).</p>
+      <p class="fine">${note || `We'll call ${esc(order.customer.phone)} to confirm delivery.`}</p>
+      <button type="button" class="btn btn-accent" id="doneBtn">Continue browsing</button>`;
+    $('#doneBtn').onclick = closeAll;
+    $('#doneBtn').focus();
+  }
+
+  $('#checkout').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
     if (!validate(form, $('#checkoutMsg'))) return;
     const d = Object.fromEntries(new FormData(form));
-    const order = {
-      id: uid('BP'), date: new Date().toISOString(), status: 'New',
-      customer: { name: d.name.trim(), phone: d.phone.trim(), email: d.email.trim(), address: d.address.trim() },
-      payment: d.payment, items: state.cart.map((i) => Object.assign({}, i)), total: cartTotal()
-    };
+    const customer = { name: d.name.trim(), phone: d.phone.trim(), email: d.email.trim(), address: d.address.trim() };
+    const items = state.cart.map((i) => Object.assign({}, i));
+
+    if (d.payment === 'Pay online') {
+      const msg = $('#checkoutMsg');
+      msg.textContent = 'Taking you to secure payment…';
+      msg.className = 'form-msg';
+      try {
+        const data = await Store.createOnlineOrder(customer, items);
+        window.location.href = data.authorization_url; // Paystack hosted checkout
+      } catch (err) {
+        msg.textContent = err.message || 'Online payment failed. Please try again or choose another payment method.';
+        msg.className = 'form-msg error';
+      }
+      return;
+    }
+
+    const msg = $('#checkoutMsg');
+    msg.textContent = 'Placing your order…';
+    msg.className = 'form-msg';
+    let order;
+    try {
+      order = await Store.syncOrder({ customer, payment: d.payment, items });
+    } catch (err) {
+      msg.textContent = err.message || 'We could not save your order. Please try again.';
+      msg.className = 'form-msg error';
+      return;
+    }
     const orders = Store.orders();
     orders.unshift(order);
     Store.saveOrders(orders);
     state.cart = [];
     saveCart();
-    $('#checkoutBody').innerHTML = `
-      <h3>Thank you, ${esc(order.customer.name.split(' ')[0])}.</h3>
-      <p>Your order <b>${order.id}</b> for <b>${naira(order.total)}</b> has been received (${esc(order.payment)}).</p>
-      <p class="fine">We'll call ${esc(order.customer.phone)} to confirm delivery.</p>
-      <button type="button" class="btn btn-accent" id="doneBtn">Continue browsing</button>`;
-    $('#doneBtn').onclick = closeAll;
-    $('#doneBtn').focus();
+    showOrderDone(order);
   });
+
+  /* Returning from Paystack: verify the payment and confirm the order. */
+  async function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get('reference') || params.get('trxref');
+    if (!reference) return;
+    window.history.replaceState({}, '', window.location.pathname);
+    try {
+      const data = await Store.verifyPayment(reference);
+      if (data && data.paid) {
+        const order = data.order;
+        state.cart = [];
+        saveCart();
+        $('#checkoutBody').innerHTML = checkoutFormHTML; // reset the form behind the result
+        $('#checkout').hidden = false;
+        showOrderDone(order, `Payment confirmed. We'll call ${esc(order.customer.phone)} to arrange delivery.`);
+      } else {
+        toast('Payment not completed. Your order is saved — pay on delivery or contact us.');
+      }
+    } catch (err) {
+      toast(err.message || 'We could not verify your payment. Please contact us with your reference.');
+    }
+  }
 
   /* ---------- quote ---------- */
   const quoteForm = $('#quoteForm');
@@ -375,7 +421,7 @@
     $('#estimate').innerHTML = `${rows}<div class="estimate-total"><span>Estimated total</span><b>${naira(e.total)}</b></div>`;
   }
   quoteForm.addEventListener('input', renderEstimate);
-  quoteForm.addEventListener('submit', (ev) => {
+  quoteForm.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const msg = $('#quoteMsg');
     if (!validate(quoteForm, msg)) return;
@@ -390,6 +436,15 @@
       area: +e.area.toFixed(1), litres: e.litres, estimate: e.total, colour: state.colour.name + ' ' + state.colour.code
     });
     Store.saveEnquiries(list);
+    msg.textContent = 'Sending your request…';
+    msg.className = 'form-msg';
+    try {
+      await Store.syncEnquiry(list[0]);
+    } catch (err) {
+      msg.textContent = err.message || 'We could not send your request. Please try again.';
+      msg.className = 'form-msg error';
+      return;
+    }
     msg.textContent = `Thank you, ${d.name.trim().split(' ')[0]}. Your request has been received — we'll be in touch shortly.`;
     msg.className = 'form-msg ok';
     ['name', 'phone', 'email', 'message'].forEach((n) => (quoteForm.elements[n].value = ''));
@@ -428,6 +483,8 @@
   renderEstimate();
   onScroll();
   reveal();
+  handlePaymentReturn();
+  Store.loadProducts().then(renderProducts);
   $('#year').textContent = new Date().getFullYear();
   requestAnimationFrame(() => document.body.classList.add('ready'));
 })();
