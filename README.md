@@ -65,3 +65,21 @@ Here are some features I'd love to incorporate:
 8. **Admin dashboard:** Manage products, orders, customers and enquiries.
 
 The goal is to create something that feels like a premium international paint brand, not an ordinary business website.
+
+---
+
+## Running the site
+
+The site is plain HTML, CSS and JavaScript with no build step.
+
+```
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000` for the website and `/admin.html` for the dashboard (demo passcode: `bella-admin`).
+
+- `index.html` — homepage, colour studio, room visualiser, showroom, projects, quote form, cart and checkout
+- `admin.html` — products, orders, customers and enquiries
+- `js/data.js` — colours, default products, projects and the storage helper
+
+Orders, enquiries and product edits are saved in the browser's `localStorage`. There is no server, online payment or real login yet.

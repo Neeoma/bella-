@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bella Paint — Colour, composed.</title>
+  <meta name="description" content="Bella Paint: premium paints, a colour studio, room visualiser and professional painting services.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <a class="logo" href="#top" aria-label="Bella Paint home">Bella<span class="logo-dot"></span><small>Paint</small></a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Menu"><span></span><span></span></button>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="#studio">Colour Studio</a>
+      <a href="#visualiser">Visualiser</a>
+      <a href="#showroom">Showroom</a>
+      <a href="#projects">Projects</a>
+      <a href="#quote">Get a Quote</a>
+    </nav>
+    <button class="cart-btn" id="cartBtn" aria-label="Open cart">
+      Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </header>
+
+  <main id="main">
+    <!-- 1. Immersive hero -->
+    <section class="hero" id="top">
+      <div class="hero-strips" id="heroStrips" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="eyebrow">Paint makers · Colour consultants · Master painters</p>
+        <h1>Colour,<br><em>composed.</em></h1>
+        <p class="lede">Richly pigmented paints made for our light and our weather, and the people who apply them beautifully.</p>
+        <div class="hero-cta">
+          <a class="btn btn-accent" href="#studio">Explore colours</a>
+          <a class="btn btn-ghost" href="#quote">Book a consultation</a>
+        </div>
+        <p class="hero-swatch" id="heroSwatch"></p>
+      </div>
+      <a class="scroll-cue" href="#studio" aria-label="Scroll to Colour Studio"><span></span></a>
+    </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>Velvet Matt</span><i></i><span>Silk Touch</span><i></i><span>WeatherGuard</span><i></i><span>Stucco Veneziano</span><i></i><span>High Gloss Enamel</span><i></i><span>Texcote</span><i></i>
+        <span>Velvet Matt</span><i></i><span>Silk Touch</span><i></i><span>WeatherGuard</span><i></i><span>Stucco Veneziano</span><i></i><span>High Gloss Enamel</span><i></i><span>Texcote</span><i></i>
+      </div>
+    </div>
+
+    <!-- 2. Colour studio -->
+    <section class="section paper" id="studio">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">01 — Colour Studio</p>
+          <h2>Twenty-four colours.<br><em>Find yours.</em></h2>
+          <p>Pick a shade to see its pairings, then try it on a wall or order a sample pot.</p>
+        </div>
+        <div class="studio reveal">
+          <div class="studio-left">
+            <div class="chips" id="familyChips" role="tablist" aria-label="Colour families"></div>
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <aside class="colour-card" id="colourCard" aria-live="polite"></aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Room visualiser -->
+    <section class="section dark" id="visualiser">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">02 — Room Visualiser</p>
+          <h2>See it on the wall<br><em>before you open the tin.</em></h2>
+        </div>
+        <div class="vis reveal">
+          <div class="vis-stage">
+            <div class="room" id="room"></div>
+            <p class="vis-caption" id="visCaption"></p>
+          </div>
+          <div class="vis-panel">
+            <div class="field">
+              <span class="label">Room</span>
+              <div class="chips" id="sceneChips"></div>
+            </div>
+            <div class="field">
+              <span class="label">Painting</span>
+              <div class="chips" id="targetChips"></div>
+            </div>
+            <div class="field">
+              <span class="label">Colour</span>
+              <div class="mini-swatches" id="visSwatches"></div>
+            </div>
+            <div class="field">
+              <span class="label">Finish</span>
+              <div class="chips" id="finishChips"></div>
+            </div>
+            <p class="fine">Screen colours are a guide only. Order a sample pot to check a shade in your own light.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Showroom / store -->
+    <section class="section paper" id="showroom">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">03 — Showroom</p>
+          <h2>The collection</h2>
+          <p>Tintable paints are shown in your selected colour: <strong id="showroomColour"></strong>.</p>
+        </div>
+        <div class="chips reveal" id="categoryChips"></div>
+        <div class="products" id="products"></div>
+      </div>
+    </section>
+
+    <!-- 5. Projects -->
+    <section class="section dark" id="projects">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">04 — Our Projects</p>
+          <h2>Before, <em>and after.</em></h2>
+          <p>Drag the handle to compare. Illustrated concept projects — swap in your own photography.</p>
+        </div>
+        <div class="projects" id="projectList"></div>
+        <div class="stats reveal">
+          <div><b>24</b><span>curated colours</span></div>
+          <div><b>10</b><span>products in range</span></div>
+          <div><b>3</b><span>services: supply, consult, apply</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Quote & consultation -->
+    <section class="section paper" id="quote">
+      <div class="wrap quote">
+        <div class="reveal">
+          <p class="eyebrow">05 — Quote &amp; Consultation</p>
+          <h2>Tell us about<br><em>your space.</em></h2>
+          <p>Enter your room size for an instant estimate, then send it to us. A colour consultant will follow up to confirm.</p>
+          <div class="estimate" id="estimate" aria-live="polite"></div>
+          <p class="fine">Estimates are indicative: 12 m² per litre, doors and windows not deducted. Final quotes follow a site visit.</p>
+        </div>
+        <form class="form reveal" id="quoteForm" novalidate>
+          <div class="row">
+            <label>Service
+              <select name="service">
+                <option value="Supply only">Paint supply only</option>
+                <option value="Supply & painting" selected>Supply &amp; professional painting</option>
+                <option value="Colour consultation">Colour consultation</option>
+              </select>
+            </label>
+            <label>Property
+              <select name="property">
+                <option>Home</option><option>Office / commercial</option><option>Construction project</option>
+              </select>
+            </label>
+          </div>
+          <div class="row row-4">
+            <label>Length (m)<input type="number" name="length" min="1" step="0.1" value="5"></label>
+            <label>Width (m)<input type="number" name="width" min="1" step="0.1" value="4"></label>
+            <label>Height (m)<input type="number" name="height" min="1" step="0.1" value="2.8"></label>
+            <label>Coats<input type="number" name="coats" min="1" max="4" step="1" value="2"></label>
+          </div>
+          <div class="row">
+            <label>Full name<input type="text" name="name" required autocomplete="name"></label>
+            <label>Phone<input type="tel" name="phone" required autocomplete="tel"></label>
+          </div>
+          <label>Email<input type="email" name="email" required autocomplete="email"></label>
+          <label>Anything else we should know?<textarea name="message" rows="3"></textarea></label>
+          <button class="btn btn-accent" type="submit">Request my quote</button>
+          <p class="form-msg" id="quoteMsg" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <a class="logo" href="#top">Bella<span class="logo-dot"></span><small>Paint</small></a>
+        <p>Premium paint, colour advice and professional application.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <a href="#studio">Colour Studio</a><a href="#visualiser">Visualiser</a><a href="#showroom">Showroom</a><a href="#projects">Projects</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="#quote">Get a quote</a><a href="admin.html">Admin dashboard</a>
+      </div>
+    </div>
+    <p class="wrap copyright">© <span id="year"></span> Bella Paint. All rights reserved.</p>
+  </footer>
+
+  <!-- Cart drawer -->
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="cart" aria-label="Shopping cart" aria-hidden="true">
+    <div class="drawer-head">
+      <h3>Your cart</h3>
+      <button class="icon-btn" data-close aria-label="Close cart">×</button>
+    </div>
+    <div class="drawer-body" id="cartItems"></div>
+    <div class="drawer-foot">
+      <div class="total"><span>Subtotal</span><b id="cartTotal">₦0</b></div>
+      <button class="btn btn-accent block" id="checkoutBtn">Checkout</button>
+    </div>
+  </aside>
+
+  <!-- Checkout modal -->
+  <div class="modal" id="checkout" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" hidden>
+    <div class="modal-box">
+      <button class="icon-btn modal-close" data-close aria-label="Close checkout">×</button>
+      <div id="checkoutBody">
+        <h3 id="checkoutTitle">Checkout</h3>
+        <p class="fine" id="checkoutSummary"></p>
+        <form class="form" id="checkoutForm" novalidate>
+          <div class="row">
+            <label>Full name<input type="text" name="name" required autocomplete="name"></label>
+            <label>Phone<input type="tel" name="phone" required autocomplete="tel"></label>
+          </div>
+          <label>Email<input type="email" name="email" required autocomplete="email"></label>
+          <label>Delivery address<textarea name="address" rows="2" required autocomplete="street-address"></textarea></label>
+          <label>Payment
+            <select name="payment">
+              <option>Pay on delivery</option>
+              <option>Bank transfer</option>
+            </select>
+          </label>
+          <button class="btn btn-accent block" type="submit">Place order</button>
+          <p class="form-msg" id="checkoutMsg" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/rooms.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
