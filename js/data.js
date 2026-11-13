@@ -61,11 +61,11 @@
   ];
 
   const PROJECTS = [
-    { id: 'p1', title: 'Ikoyi Penthouse', type: 'Residential · Interior', scene: 'living', wall: 'cowrie', accent: 'obudu', year: 2026,
+    { id: 'p1', title: 'Ikoyi Penthouse', type: 'Residential · Interior', before: 'assets/project-living-before.jpg', img: 'assets/project-living.jpg', year: 2026,
       note: 'Full interior repaint, 4 bedrooms, Velvet Matt throughout with a moss feature wall.' },
-    { id: 'p2', title: 'The Adire Suite, Abuja', type: 'Hospitality · Interior', scene: 'bedroom', wall: 'lekki', accent: 'adire', year: 2025,
+    { id: 'p2', title: 'The Adire Suite, Abuja', type: 'Hospitality · Interior', before: 'assets/project-bedroom-before.jpg', img: 'assets/project-bedroom.jpg', year: 2025,
       note: 'Boutique hotel bedrooms finished in Silk Touch with indigo headboard walls.' },
-    { id: 'p3', title: 'Clay & Co. Restaurant', type: 'Commercial · Interior', scene: 'dining', wall: 'shea', accent: 'calabar', year: 2025,
+    { id: 'p3', title: 'Clay & Co. Restaurant', type: 'Commercial · Interior', before: 'assets/project-dining-before.jpg', img: 'assets/project-dining.jpg', year: 2025,
       note: 'Dining room in warm neutrals with a Stucco Veneziano clay feature wall.' }
   ];
 
@@ -92,6 +92,39 @@
     saveCart: (list) => write('bella_cart', list)
   };
 
+  /* ---------- server API ----------
+     localStorage stays as a cache / offline fallback; the server is the source of truth. */
+  const api = async (path, opts) => {
+    const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}));
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* empty body */ }
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'Request failed');
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  };
+
+  Object.assign(Store, {
+    loadProducts: async () => {
+      try {
+        const list = await api('/api/products');
+        if (Array.isArray(list) && list.length) Store.saveProducts(list);
+      } catch (e) { /* offline — keep the cached list */ }
+      return Store.products();
+    },
+    syncOrder: (order) => api('/api/orders', { method: 'POST', body: JSON.stringify({
+      customer: order.customer, payment: order.payment, items: order.items
+    }) }),
+    syncEnquiry: (q) => api('/api/enquiries', { method: 'POST', body: JSON.stringify(q) }),
+    createOnlineOrder: (customer, items) => api('/api/payments/initialize', {
+      method: 'POST', body: JSON.stringify({ customer, items })
+    }),
+    verifyPayment: (reference) => api('/api/payments/verify?reference=' + encodeURIComponent(reference))
+  });
+
   const naira = (n) => '₦' + Math.round(Number(n) || 0).toLocaleString('en-NG');
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -105,5 +138,5 @@
     return (0.299 * r + 0.587 * g + 0.114 * b) > 150;
   };
 
-  window.Bella = { COLOURS, DEFAULT_PRODUCTS, PROJECTS, Store, naira, esc, uid, colourById, isLight };
+  window.Bella = { COLOURS, DEFAULT_PRODUCTS, PROJECTS, Store, api, naira, esc, uid, colourById, isLight };
 })();

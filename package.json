@@ -1,0 +1,14 @@
+{
+  "name": "bella-paint",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bella Paint — website, online store and admin dashboard",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
